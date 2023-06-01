@@ -1,0 +1,3 @@
+Taille du tableau : 9
+Nombre de joueurs : 4
+Nombre de barrières : 25

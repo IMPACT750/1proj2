@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
-import subprocess
+
 
 TAILLE_CELLULE = 50
 JOUEUR1 = 1
@@ -18,6 +18,10 @@ class App(tk.Tk):
         super().__init__()
         self.title("Quoridor Dame")
         self.geometry("800x800")
+       
+
+        self.value_taille_tableau = 0
+        self.value_joueur = 0
 
         self.barrier_label1 = tk.Label(self, text="Choisissez la taille du tableau:")
         self.barrier_label1.pack(pady=5)
@@ -33,7 +37,7 @@ class App(tk.Tk):
 
         self.button_frame2 = tk.Frame(self)
         self.create_buttons_frame(self.button_frame2, ["2 joueurs", "4 joueurs"],
-                                  [lambda: self.get_value_joueur(2), lambda: self.get_value_joueur(4)])
+                                  [lambda: self.on_button_click(2), lambda: self.on_button_click(4)])
         self.button_frame2.pack(pady=10)
 
         self.barrier_label3 = tk.Label(self, text="Choisissez le nombre de barrières (entre 4 et 40):")
@@ -66,10 +70,13 @@ class App(tk.Tk):
     def on_button_click(self, value):
         if value in [5, 7, 9, 11]:
             self.value_taille_tableau = value
-
-    def get_value_joueur(self, value):
         if value in [2, 4]:
             self.value_joueur = value
+        if self.value_taille_tableau != 0 and self.value_joueur != 0:
+            self.creer_tableau(self.value_taille_tableau, self.value_joueur)
+
+
+
 
     def reset_game(self):
         self.barrier_entry.delete(0, tk.END)
@@ -88,35 +95,47 @@ class App(tk.Tk):
         value = self.barrier_entry.get()
         if value.isdigit() and 4 <= int(value) <= 40:
             messagebox.showinfo("Nombre de barrières", f"Vous avez choisi {value} barrières.")
+            self.dessiner_tableau(self.tableau)
+
             self.start_timer()
-            self.subprocess = subprocess.run(["python", "main.py"])  # Ouvre la page main.py
-            self.destroy()
+
+            # Supprimer les labels et les boutons
+            self.barrier_label1.destroy()
+            self.button_frame1.destroy()
+            self.barrier_label2.destroy()
+            self.button_frame2.destroy()
+            self.barrier_label3.destroy()
+            self.barrier_entry.destroy()
+            self.barrier_button.destroy()
+            self.reset_button.destroy()
         else:
             messagebox.showerror("Erreur", "Veuillez entrer un nombre valide entre 4 et 40.")
 
-    def creer_tableau(self, taille):
+
+
+    def creer_tableau(self, taille, value_joueur):
         for i in range(taille):
             self.tableau.append([])
             for j in range(taille):
-                if  self.value_joueur == 2:
-                    if i == taille//2 and j == 0:
+                if value_joueur == 2:
+                    if i == taille // 2 and j == 0:
                         self.tableau[i].append(JOUEUR1)
-                    elif i == taille//2 and j == taille-1:
+                    elif i == taille // 2 and j == taille - 1:
                         self.tableau[i].append(JOUEUR2)
                     else:
                         self.tableau[i].append(0)
-                elif  self.value_joueurr == 4:
-                    if i == 0 and j == 0:
+                elif value_joueur == 4:
+                    if i == taille // 2 and j == 0:
                         self.tableau[i].append(JOUEUR1)
-                    elif i == 0 and j == taille-1:
+                    elif i == taille // 2 and j == taille - 1:
                         self.tableau[i].append(JOUEUR2)
-                    elif i == taille-1 and j == 0:
+                    elif i == 0 and j == taille // 2:
                         self.tableau[i].append(JOUEUR3)
-                    elif i == taille-1 and j == taille-1:
+                    elif i == taille - 1 and j == taille // 2:
                         self.tableau[i].append(JOUEUR4)
                     else:
                         self.tableau[i].append(0)
-        print(self.tableau)
+        print('tet',self.tableau)
         return self.tableau
 
     def dessiner_tableau(self, tableau):

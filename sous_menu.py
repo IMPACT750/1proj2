@@ -28,14 +28,14 @@ def create_buttons_frame(root, texts, commands):
     frame.pack()
 
 def on_button_click(value):
-    global value_taille_tableau
     if value in [5, 7, 9, 11]:
         value_taille_tableau = value
+    return value_taille_tableau
 
 def get_value_joueur(value):
-    global value_joueur
     if value in [2, 4]:
         value_joueur = value
+    return value_joueur
 
 def reset_game():
     barrier_entry.delete(0, tk.END)

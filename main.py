@@ -1,5 +1,5 @@
 import tkinter as tk
-from sous_menu import *
+from sous_menu import value_joueur
 TAILLE_CELLULE = 50
 JOUEUR1 = 1
 JOUEUR2 = 2
@@ -24,14 +24,14 @@ class App(tk.Tk):
         for i in range(taille):
             self.tableau.append([])
             for j in range(taille):
-                if get_value_joueur() == 2:
+                if value_joueur == 2:
                     if i == taille//2 and j == 0:
                         self.tableau[i].append(JOUEUR1)
                     elif i == taille//2 and j == taille-1:
                         self.tableau[i].append(JOUEUR2)
                     else:
                         self.tableau[i].append(0)
-                elif get_value_joueur() == 4:
+                elif value_joueur == 4:
                     if i == 0 and j == 0:
                         self.tableau[i].append(JOUEUR1)
                     elif i == 0 and j == taille-1:
@@ -42,6 +42,7 @@ class App(tk.Tk):
                         self.tableau[i].append(JOUEUR4)
                     else:
                         self.tableau[i].append(0)
+        print(self.tableau) 
         return self.tableau
 
     def dessiner_tableau(self, tableau):

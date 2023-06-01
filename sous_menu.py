@@ -21,15 +21,20 @@ def create_buttons_frame(root, texts, commands):
         button.pack(side=tk.LEFT, padx=5, pady=5)
     frame.pack()
 
-value_joueur = 0
-value_taille_tableau = 0
+
 
 def on_button_click(value):
-    global value_joueur, value_taille_tableau
+    global value_taille_tableau
     if value in [5, 7, 9, 11]:
         value_taille_tableau = value
-    elif value in [2, 4]:
+    return value_taille_tableau
+    
+
+def get_value_joueur(value):
+    global value_joueur
+    if value in [2, 4]:
         value_joueur = value
+    return value_joueur
 
 def reset_game():
     barrier_entry.delete(0, tk.END)
@@ -60,7 +65,7 @@ barrier_label = tk.Label(root, text="Choisissez le nombre de Joueurs (entre 2 et
 barrier_label.pack(pady=5)
 
 button_frame2 = tk.Frame(root)
-create_buttons_frame(button_frame2, ["2 joueurs", "4 joueurs"], [lambda: on_button_click(2), lambda: on_button_click(4)])
+create_buttons_frame(button_frame2, ["2 joueurs", "4 joueurs"], [lambda: get_value_joueur(2), lambda: get_value_joueur(4)])
 button_frame2.pack(pady=10)
 
 barrier_label = tk.Label(root, text="Choisissez le nombre de barrières (entre 4 et 40):")

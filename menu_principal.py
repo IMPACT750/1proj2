@@ -5,7 +5,7 @@ import pygame
 
 def jouer_en_local():
     fenetre.destroy()
-    subprocess.run(["python", "sous_menu.py"])
+    subprocess.run(["python", "test2.py"])
 
 def jouer_contre_ordi():
     subprocess.run(["python", "fichier_jouer_ordi.py"])

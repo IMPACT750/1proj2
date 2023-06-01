@@ -8,7 +8,7 @@ value_joueur = None
 
 def refresh_page():
     root.update()  # Mettre à jour la fenêtre principale
-    root.after(1000, refresh_page)  # Programmer l'appel à la fonction refresh_page après 1 seconde
+    root.after(10000, refresh_page)  # Programmer l'appel à la fonction refresh_page après 1 seconde
 
 def show_barrier_dialog():
     value = barrier_entry.get()
@@ -28,14 +28,14 @@ def create_buttons_frame(root, texts, commands):
     frame.pack()
 
 def on_button_click(value):
+    global value_taille_tableau
     if value in [5, 7, 9, 11]:
         value_taille_tableau = value
-    return value_taille_tableau
 
 def get_value_joueur(value):
+    global value_joueur
     if value in [2, 4]:
         value_joueur = value
-    return value_joueur
 
 def reset_game():
     barrier_entry.delete(0, tk.END)
@@ -45,18 +45,22 @@ def start_timer():
     start_time = datetime.now()
     print("Chronomètre démarré.")
     update_timer()
-
+    
 def update_timer():
+    global elapsed_time
     elapsed_time = datetime.now() - start_time
     timer_label.configure(text=str(elapsed_time))
     timer_label.after(1000, update_timer)  # Mettre à jour le timer toutes les secondes (1000 millisecondes)
+
 
 def save_and_open_main():
     with open("config.txt", "w") as file:
         file.write(f"Taille du tableau : {value_taille_tableau}\n")
         file.write(f"Nombre de joueurs : {value_joueur}\n")
         file.write(f"Nombre de barrières : {barrier_entry.get()}\n")
+        file.write(f"Temps écoulé : {elapsed_time}\n")  # Ajouter cette ligne pour enregistrer le temps
     root.destroy()  # Fermer la fenêtre actuelle
+
 
 root = tk.Tk()
 root.title("Quoridor Dame")

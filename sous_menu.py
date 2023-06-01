@@ -95,5 +95,7 @@ timer_label.pack(pady=10)
 save_button = tk.Button(root, text="Enregister & arrêter le jeu", command=save_and_open_main)
 save_button.pack(pady=5)
 
-refresh_page()
-root.mainloop()
+
+if __name__ == "__main__":
+    refresh_page()
+    root.mainloop()

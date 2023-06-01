@@ -4,7 +4,8 @@ import subprocess
 import pygame
 
 def jouer_en_local():
-    subprocess.run(["python", "fichier_jouer_local.py"])
+    fenetre.destroy()
+    subprocess.run(["python", "sous_menu.py"])
 
 def jouer_contre_ordi():
     subprocess.run(["python", "fichier_jouer_ordi.py"])

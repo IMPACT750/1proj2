@@ -4,10 +4,10 @@ from datetime import datetime
 
 
 TAILLE_CELLULE = 50
-JOUEUR1 = 0
-JOUEUR2 = 1
-JOUEUR3 = 2
-JOUEUR4 = 3
+JOUEUR1 = 1
+JOUEUR2 = 2
+JOUEUR3 = 3
+JOUEUR4 = 4
 COULEUR_JOUEUR1 = "red"
 COULEUR_JOUEUR2 = "blue"
 COULEUR_JOUEUR3 = "green"
@@ -19,8 +19,8 @@ class App(tk.Tk):
         self.title("Quoridor Dame")
         self.geometry("800x800")
         self.value_taille_tableau = 0
-        self.value_joueur = 0
-        self.tour=0
+
+
 
         self.barrier_label1 = tk.Label(self, text="Choisissez la taille du tableau:")
         self.barrier_label1.pack(pady=5)
@@ -151,7 +151,6 @@ class App(tk.Tk):
 
         self.canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.canvas.config(width=canvas_width, height=canvas_height)
-        valeur=self.tour%self.value_joueur
         for i in range(len(tableau)):
             for j in range(len(tableau[i])):
                 if (i + j) % 2 == 0:
@@ -162,23 +161,27 @@ class App(tk.Tk):
                     self.canvas.create_rectangle(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                                  i * TAILLE_CELLULE + TAILLE_CELLULE,
                                                  j * TAILLE_CELLULE + TAILLE_CELLULE, fill="grey")
-                if tableau[i][j] == valeur:
+                if tableau[i][j] == 1:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR1)
-                elif tableau[i][j] == valeur:
+
+                elif tableau[i][j] == 2:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR2)
-                elif tableau[i][j] == valeur:
+
+                elif tableau[i][j] == 3:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR3)
-                elif tableau[i][j] == valeur:
+
+                elif tableau[i][j] == 4:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR4)
-                self.tour+=1
+
+
 
     def save_and_open_main(self):
         self.subprocess.kill()  # Arrête le processus du fichier main.py
@@ -197,7 +200,7 @@ class App(tk.Tk):
         # Créer les joueurs avec les positions de départ
         for i in range(self.value_joueur):
             x, y = positions[i]
-            player = Player(x, y, i)
+            player = Player(x, y, i+1)
             players.append(player)
         print(players)
         return players
@@ -212,7 +215,7 @@ class App(tk.Tk):
         value_player=self.create_players(tableau)
         for i in range(len(value_player)):
             if value_player[i].numero==self.tour:
-                tableau[grid_x][grid_y] = value_player[i].numero
+                Player.deplacement(value_player[i],event,tableau,grid_x,grid_y)
         self.dessiner_tableau(tableau)
 
 
@@ -227,11 +230,7 @@ class Player:
 
 
 
-    def deplacement(self, event, tableau):
-        souris_x = event.x
-        souris_y = event.y
-        souris_x = souris_x // TAILLE_CELLULE
-        souris_y = souris_y // TAILLE_CELLULE
+    def deplacement(self, event, tableau,souris_x,souris_y):
         if (abs(souris_x - self.x) <= 1 and souris_y == self.y) or (abs(souris_y - self.y) <= 1 and souris_x == self.x):
             if self.check_collision(event,tableau):
                 tableau[self.x][self.y] = 0

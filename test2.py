@@ -20,8 +20,10 @@ class App(tk.Tk):
         self.geometry("800x800")
         self.value_taille_tableau = 0
         self.value_joueur = 0
-        self.tour=0
+        self.tour= 1
+        self.players = []
 
+        self.bind("<Button-1>", self.on_click)
         self.barrier_label1 = tk.Label(self, text="Choisissez la taille du tableau:")
         self.barrier_label1.pack(pady=5)
 
@@ -74,6 +76,16 @@ class App(tk.Tk):
         if self.value_taille_tableau != 0 and self.value_joueur != 0:
             self.creer_tableau(self.value_taille_tableau, self.value_joueur)
 
+    def on_click(self, event):
+        self.tour %= self.value_joueur + 1
+        if self.tour == 0:
+            self.tour += 1
+            # Player.deplacement(self, event)
+        self.players[self.tour-1].deplacement(event)
+        self.tour += 1
+        print(self.tour)
+        print(self.players)
+        
 
 
 
@@ -95,7 +107,7 @@ class App(tk.Tk):
         if value.isdigit() and 4 <= int(value) <= 40:
             messagebox.showinfo("Nombre de barrières", f"Vous avez choisi {value} barrières.")
             self.dessiner_tableau(self.tableau)
-
+            self.create_players(self.value_joueur, self.tableau)
             self.start_timer()
 
             # Supprimer les labels et les boutons
@@ -109,7 +121,6 @@ class App(tk.Tk):
             self.reset_button.destroy()
         else:
             messagebox.showerror("Erreur", "Veuillez entrer un nombre valide entre 4 et 40.")
-
 
 
     def creer_tableau(self, taille, value_joueur):
@@ -183,10 +194,9 @@ class App(tk.Tk):
     def save_and_open_main(self):
         self.subprocess.kill()  # Arrête le processus du fichier main.py
         self.destroy()  # Ferme la fenêtre
+    
     def create_players(self, tableau):
-        players = []
         positions = []
-
         # Déterminer les positions de départ en fonction du nombre de joueurs
         if self.value_joueur == 2:
             positions = [(tableau.width // 2, 0), (tableau.width // 2, tableau.height - 1)]
@@ -197,23 +207,11 @@ class App(tk.Tk):
         # Créer les joueurs avec les positions de départ
         for i in range(self.value_joueur):
             x, y = positions[i]
-            player = Player(x, y, i)
-            players.append(player)
-        print(players)
-        return players
-    def mouse_to_grid(self,x, y):
-        grid_x = (x - TAILLE_CELLULE ) // TAILLE_CELLULE
-        grid_y = (y - TAILLE_CELLULE) // TAILLE_CELLULE
-        return grid_x, grid_y
-    def mouse_Move(self,event,tableau):
-        mouse_x = event.x
-        mouse_y = event.y
-        grid_x, grid_y = self.mouse_to_grid(mouse_x, mouse_y)
-        value_player=self.create_players(tableau)
-        for i in range(len(value_player)):
-            if value_player[i].numero==self.tour:
-                tableau[grid_x][grid_y] = value_player[i].numero
-        self.dessiner_tableau(tableau)
+            player = Player(x, y, i+1)
+            self.players.append(player)
+        return self.players
+    
+
 
 
 
@@ -224,7 +222,6 @@ class Player:
         self.y = y
         self.numero = num
         self.num_walls = 10
-
 
 
     def deplacement(self, event, tableau):

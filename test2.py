@@ -4,10 +4,10 @@ from datetime import datetime
 
 
 TAILLE_CELLULE = 50
-JOUEUR1 = 1
-JOUEUR2 = 2
-JOUEUR3 = 3
-JOUEUR4 = 4
+JOUEUR1 = 0
+JOUEUR2 = 1
+JOUEUR3 = 2
+JOUEUR4 = 3
 COULEUR_JOUEUR1 = "red"
 COULEUR_JOUEUR2 = "blue"
 COULEUR_JOUEUR3 = "green"
@@ -18,10 +18,9 @@ class App(tk.Tk):
         super().__init__()
         self.title("Quoridor Dame")
         self.geometry("800x800")
-       
-
         self.value_taille_tableau = 0
         self.value_joueur = 0
+        self.tour=0
 
         self.barrier_label1 = tk.Label(self, text="Choisissez la taille du tableau:")
         self.barrier_label1.pack(pady=5)
@@ -152,7 +151,7 @@ class App(tk.Tk):
 
         self.canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         self.canvas.config(width=canvas_width, height=canvas_height)
-
+        valeur=self.tour%self.value_joueur
         for i in range(len(tableau)):
             for j in range(len(tableau[i])):
                 if (i + j) % 2 == 0:
@@ -163,27 +162,61 @@ class App(tk.Tk):
                     self.canvas.create_rectangle(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                                  i * TAILLE_CELLULE + TAILLE_CELLULE,
                                                  j * TAILLE_CELLULE + TAILLE_CELLULE, fill="grey")
-                if tableau[i][j] == 1:
+                if tableau[i][j] == valeur:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR1)
-                elif tableau[i][j] == 2:
+                elif tableau[i][j] == valeur:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR2)
-                elif tableau[i][j] == 3:
+                elif tableau[i][j] == valeur:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR3)
-                elif tableau[i][j] == 4:
+                elif tableau[i][j] == valeur:
                     self.canvas.create_oval(i * TAILLE_CELLULE, j * TAILLE_CELLULE,
                                             i * TAILLE_CELLULE + TAILLE_CELLULE,
                                             j * TAILLE_CELLULE + TAILLE_CELLULE, fill=COULEUR_JOUEUR4)
+                self.tour+=1
 
     def save_and_open_main(self):
         self.subprocess.kill()  # Arrête le processus du fichier main.py
         self.destroy()  # Ferme la fenêtre
-    
+    def create_players(self, tableau):
+        players = []
+        positions = []
+
+        # Déterminer les positions de départ en fonction du nombre de joueurs
+        if self.value_joueur == 2:
+            positions = [(tableau.width // 2, 0), (tableau.width // 2, tableau.height - 1)]
+        elif self.value_joueur == 4:
+            positions = [(tableau.width // 2, 0), (tableau.width // 2, tableau.height - 1),
+                         (0, tableau.height // 2), (tableau.width - 1, tableau.height // 2)]
+
+        # Créer les joueurs avec les positions de départ
+        for i in range(self.value_joueur):
+            x, y = positions[i]
+            player = Player(x, y, i)
+            players.append(player)
+        print(players)
+        return players
+    def mouse_to_grid(self,x, y):
+        grid_x = (x - TAILLE_CELLULE ) // TAILLE_CELLULE
+        grid_y = (y - TAILLE_CELLULE) // TAILLE_CELLULE
+        return grid_x, grid_y
+    def mouse_Move(self,event,tableau):
+        mouse_x = event.x
+        mouse_y = event.y
+        grid_x, grid_y = self.mouse_to_grid(mouse_x, mouse_y)
+        value_player=self.create_players(tableau)
+        for i in range(len(value_player)):
+            if value_player[i].numero==self.tour:
+                tableau[grid_x][grid_y] = value_player[i].numero
+        self.dessiner_tableau(tableau)
+
+
+
 
 class Player:
     def __init__(self, x, y, num):
@@ -191,6 +224,8 @@ class Player:
         self.y = y
         self.numero = num
         self.num_walls = 10
+
+
 
     def deplacement(self, event, tableau):
         souris_x = event.x

@@ -94,6 +94,7 @@ def validate_choices(bool):
     BOARD_HEIGHT = NUM_CELLS * CELL_SIZE
     BOARD_LEFT = (screen_width - BOARD_WIDTH) // 2
     BOARD_TOP = (screen_height - BOARD_HEIGHT) // 2
+    change_wall(NUM_CELLS,walls)
     player_in_game = Player.create_players(Player, nb_player, nb_barriere, NUM_CELLS)
     player_color = [(255, 0, 0), (0, 0, 255), (0, 255, 0), (255, 255, 0)]
     

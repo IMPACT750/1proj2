@@ -3,15 +3,14 @@ import sys
 from Players import Player
 from Boutons import Boutton
 from Walls import Wall
-from fonction_reseau import *
-
-
+import Pathfinder
 
 pygame.init()
 font = pygame.font.Font(None, 32)
 black = (0, 0, 0)
 white = (255, 255, 255)
 gray = (128, 128, 128)
+zzzzz=(255, 255, 0)
 player_color = [(255, 0, 0), (0, 0, 255), (0, 255, 0), (255, 255, 0)]
 
 
@@ -21,6 +20,8 @@ def mouse_to_grid(x, y,CELL_SIZE,BOARD_LEFT,BOARD_TOP):
     return grid_x, grid_y
 
 
+
+
 def draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, player_color,screen,board):
     for i in range(nb_player):
         pygame.draw.circle(screen, player_color[i], (
@@ -28,6 +29,10 @@ def draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, pla
             BOARD_TOP + player_in_game[i].y * CELL_SIZE + CELL_SIZE // 2),
                            CELL_SIZE // 2 - 5)
         board[player_in_game[i].x][player_in_game[i].y] = player_in_game[i].ID
+
+
+
+
 
 
 def draw_board(NUM_CELLS,screen,BOARD_LEFT,CELL_SIZE,BOARD_TOP):
@@ -47,16 +52,16 @@ def draw_walls(walls,screen,BOARD_LEFT,CELL_SIZE,BOARD_TOP):
     for i in range(len(walls)):
         for j in range(len(walls[i])):
             if walls[i][j]["TOP"] == 1:
-                pygame.draw.rect(screen, black, (
+                pygame.draw.rect(screen, zzzzz, (
                     BOARD_LEFT + i * CELL_SIZE, BOARD_TOP + j * CELL_SIZE, CELL_SIZE, 4))
             if walls[i][j]["BOTTOM"] == 1:
-                pygame.draw.rect(screen, black, (
+                pygame.draw.rect(screen, zzzzz, (
                     BOARD_LEFT + i * CELL_SIZE, BOARD_TOP + (j + 1) * CELL_SIZE, CELL_SIZE, 4))
             if walls[i][j]["LEFT"] == 1:
-                pygame.draw.rect(screen, black, (
+                pygame.draw.rect(screen, zzzzz, (
                     BOARD_LEFT + i * CELL_SIZE, BOARD_TOP + j * CELL_SIZE, 4, CELL_SIZE))
             if walls[i][j]["RIGHT"] == 1:
-                pygame.draw.rect(screen, black, (
+                pygame.draw.rect(screen, zzzzz, (
                     BOARD_LEFT + (i + 1) * CELL_SIZE, BOARD_TOP + j * CELL_SIZE, 4, CELL_SIZE))
 
 
@@ -142,6 +147,7 @@ def reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_L
     player_in_game = Player.create_players(Player, nb_player, nb_barriere, NUM_CELLS)
     for i in range(len(player_in_game)):
         player_in_game[i].score=point[i]
+    change_wall(NUM_CELLS,walls)
     jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player,nb_barriere, barriere_max)
 
 def draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color):
@@ -166,25 +172,97 @@ def draw_score_and_barriers(screen, player_in_game, game_turn, font, player_colo
         screen.blit(score_text, (offset_x[i % 2] - score_text.get_width() // 2, offset_y - ((1 - i // 2) * 40)))
 
 
-def jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player,barriere_max,connection):
+def can_move(walls, position):
+    """Vérifie si le joueur peut se déplacer dans une direction à partir de la position donnée.
+
+    Args:
+    walls (list): Les murs du plateau, représentés comme une matrice 2D de dictionnaires.
+    position (tuple): La position actuelle du joueur, un tuple (x, y).
+
+    Returns:
+    dict: Un dictionnaire avec les directions comme clés et un booléen comme valeur, indiquant si le joueur peut se déplacer dans cette direction.
+    """
+    x, y = position
+    directions = ["TOP", "BOTTOM", "LEFT", "RIGHT"]
+    opposite_directions = {"TOP": "BOTTOM", "BOTTOM": "TOP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
+    possible_moves = {}
+
+    for direction in directions:
+        new_x, new_y = x, y
+        # Vérifie la direction et ajuste les coordonnées en conséquence
+        if direction == 'TOP':
+            new_x -= 1
+        elif direction == 'BOTTOM':
+            new_x += 1
+        elif direction == 'LEFT':
+            new_y -= 1
+        elif direction == 'RIGHT':
+            new_y += 1
+
+        # Vérifie que les nouvelles coordonnées sont à l'intérieur du plateau de jeu
+        if new_x < 0 or new_x >= len(walls) or new_y < 0 or new_y >= len(walls[0]):
+            possible_moves[direction] = False
+        # Vérifie qu'il n'y a pas de mur dans la direction souhaitée à la position actuelle ou à la position cible
+        elif walls[x][y][direction] == 1 or walls[new_x][new_y][opposite_directions[direction]] == 1:
+            possible_moves[direction] = False
+        else:
+            possible_moves[direction] = True
+
+    return possible_moves
+
+
+def can_move(walls, position):
+    
+    x, y = position
+    directions = ["TOP", "BOTTOM", "LEFT", "RIGHT"]
+    opposite_directions = {"TOP": "BOTTOM", "BOTTOM": "TOP", "LEFT": "RIGHT", "RIGHT": "LEFT"}
+    possible_moves = {}
+
+    for direction in directions:
+        new_x, new_y = x, y
+        # Vérifie la direction et ajuste les coordonnées en conséquence
+        if direction == 'TOP':
+            new_x -= 1
+        elif direction == 'BOTTOM':
+            new_x += 1
+        elif direction == 'LEFT':
+            new_y -= 1
+        elif direction == 'RIGHT':
+            new_y += 1
+
+        # Vérifie que les nouvelles coordonnées sont à l'intérieur du plateau de jeu
+        if new_x < 0 or new_x >= len(walls) or new_y < 0 or new_y >= len(walls[0]):
+            possible_moves[direction] = False
+        # Vérifie qu'il n'y a pas de mur dans la direction souhaitée à la position actuelle ou à la position cible
+        elif walls[x][y][direction] == 1 or walls[new_x][new_y][opposite_directions[direction]] == 1:
+            possible_moves[direction] = False
+        else:
+            possible_moves[direction] = True
+
+    return possible_moves
+
+
+def change_wall(NUM_CELLS,walls):
+    for i in range(NUM_CELLS):
+        walls[i][0]["TOP"] = 1
+        walls[i][NUM_CELLS - 1]["BOTTOM"] = 1
+        walls[0][i]["LEFT"] = 1
+        walls[NUM_CELLS - 1][i]["RIGHT"] = 1
+
+
+
+
+
+def jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player, nb_barriere,barriere_max):
     global game_turn, wall_button_clicked, wall_orientation
 
     running = True
     game_over = False
-    is_your_turn = True
-
     while running:
-        if connection != 0 and is_your_turn is False: 
-            new_tableau = recevoir_tableau_jeu(connection)  # Recevoir le tableau de jeu mis à jour du serveur
-            if new_tableau:
-                board = new_tableau["board"]
-                walls = new_tableau["walls"]
-
         screen.fill((0, 0, 0))
         draw_board(NUM_CELLS, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
         draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, player_color, screen, board)
         draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color)
-        
         for button in buttons:
             button.draw(screen)
         for event in pygame.event.get():
@@ -232,43 +310,58 @@ def jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_g
                         if game_turn == player_in_game[i].ID:
                             if (abs(grid_x - player_in_game[i].x) <= 1 and grid_y == player_in_game[i].y) or (
                                     abs(grid_y - player_in_game[i].y) <= 1 and grid_x == player_in_game[i].x):
-                                if player_in_game[i].move(grid_x, grid_y, walls, NUM_CELLS, board):
-                                    if connection != 0:
-                                        envoyer_tableau_jeu(connection, board, walls)
+                                if player_in_game[i].move(grid_x, grid_y, walls, NUM_CELLS, board) and can_move(walls, (player_in_game[i].x, player_in_game[i].y)):
                                     game_turn = player_turn(nb_player, game_turn)
                                     winner = condition_victoire(board, player_in_game)
                                     if winner != 0:
                                         game_over = True  # Mettre fin au jeu
                                         print("Le jeu est terminé. Le joueur", winner, "a gagné!")
                                         break
-                                    is_your_turn = False
                                 break
 
                 elif event.button == 3:  # Clic droit pour placer un mur
 
                     if wall_button_clicked:
+
                         for i in range(len(player_in_game)):
 
                             if game_turn == player_in_game[i].ID:
 
-                                if player_in_game[i].num_walls > 0:
 
+                                if player_in_game[i].num_walls > 0:
+                                    print(Pathfinder.verify_barriers(walls,(player_in_game[i].x,player_in_game[i].y), (player_in_game[i].arrive_x,player_in_game[i].arrive_y)))
                                     if wall_orientation == "HORIZONTAL":
-                                        walls[grid_x][grid_y][wall_position] = 1
-                                        if wall_position == "TOP":
-                                            walls[grid_x][grid_y - 1]["BOTTOM"] = 1
+                                        if  grid_y < NUM_CELLS - 1:
+                                            if wall_position == "TOP":
+                                                walls[grid_x][grid_y]["TOP"] = 1
+                                                walls[grid_x][grid_y - 1]["BOTTOM"] = 1
+                                            else:
+                                                walls[grid_x][grid_y]["BOTTOM"] = 1
+                                                walls[grid_x][grid_y + 1]["TOP"] = 1
                                         else:
-                                            walls[grid_x][grid_y + 1]["TOP"] = 1
+                                            if wall_position == "TOP":
+                                                walls[grid_x][grid_y]["TOP"] = 1
+                                            else:
+                                                walls[grid_x][grid_y]["BOTTOM"] = 1
+
                                     else:
-                                        walls[grid_x][grid_y][wall_position] = 1
-                                        if wall_position == "LEFT":
-                                            walls[grid_x - 1][grid_y]["RIGHT"] = 1
+                                        if grid_x < NUM_CELLS - 1 :
+
+                                            if wall_position == "LEFT":
+                                                walls[grid_x][grid_y]["LEFT"] = 1
+                                                walls[grid_x - 1][grid_y]["RIGHT"] = 1
+                                            else:
+                                                walls[grid_x][grid_y]["RIGHT"] = 1
+                                                walls[grid_x + 1][grid_y]["LEFT"] = 1
                                         else:
-                                            walls[grid_x + 1][grid_y]["LEFT"] = 1
+                                            if wall_position == "LEFT":
+                                                walls[grid_x][grid_y]["LEFT"] = 1
+                                            else:
+                                                walls[grid_x][grid_y]["RIGHT"] = 1
+
+
                                     player_in_game[i].num_walls -= 1
                                     game_turn = player_turn(nb_player, game_turn)
-                                    if connection != 0:
-                                        envoyer_tableau_jeu(connection, board, walls)
                                     break
 
                         wall_button_clicked = False
@@ -277,6 +370,7 @@ def jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_g
         # Dessin du plateau de jeu, des joueurs et des murs
 
         draw_walls(walls, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
+
         # Mettre à jour l'affichage
         pygame.display.flip()
         pygame.time.wait(50)  # Ajoutez cette ligne pour contrôler la vitesse de rafraîchissement de l'écran

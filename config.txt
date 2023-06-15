@@ -1,3 +1,0 @@
-Taille du tableau : 11
-Nombre de joueurs : 4
-Nombre de barrières : 40

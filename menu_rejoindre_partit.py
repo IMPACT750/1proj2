@@ -25,10 +25,13 @@ def start_the_game_retour():
 
 def validate_choices():
     ip = adresse_ip.get_value()
-    connexion_avec_serveur = join_game(ip)
-    parametre = recevoir_parametre_client(connexion_avec_serveur)
+    connexion = join_game(ip)
+    parametre = recevoir_parametre_client(connexion)
     while True:
-        jeux(parametre['walls'],surface, parametre['CELL_SIZE'],parametre['BOARD_LEFT'],parametre['BOARD_TOP'], parametre['NUM_CELLS'],parametre['player_in_game'],parametre['player_color'],parametre['board'],parametre['nb_player'],parametre['nb_barriere'],connexion_avec_serveur)
+        jeux(parametre['walls'],surface, parametre['CELL_SIZE'],parametre['BOARD_LEFT'],
+             parametre['BOARD_TOP'], parametre['NUM_CELLS'],parametre['player_in_game'],
+             parametre['player_color'],parametre['board'],parametre['nb_player'],parametre['nb_barriere'],
+             connexion=connexion,id_client=parametre['id_client'])
 
 
 # Configuration du menu

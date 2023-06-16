@@ -94,13 +94,13 @@ def validate_choices(bool):
     BOARD_HEIGHT = NUM_CELLS * CELL_SIZE
     BOARD_LEFT = (screen_width - BOARD_WIDTH) // 2
     BOARD_TOP = (screen_height - BOARD_HEIGHT) // 2
+    game.change_wall(NUM_CELLS, walls)
     player_in_game = Player.create_players(Player, nb_player, nb_barriere, NUM_CELLS)
     player_color = [(255, 0, 0), (0, 0, 255), (0, 255, 0), (255, 255, 0)]
     
     while True:
         if not bool:
-            connection = 0
-            jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player, nb_barriere,connection)
+            jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player, nb_barriere)
         else:
             parametre = {
                 'walls': walls,
@@ -114,13 +114,14 @@ def validate_choices(bool):
                 'board': board,
                 'nb_player': nb_player,
                 'nb_barriere': nb_barriere,
+                'id_client': 1
             }
 
-            connection = join_game("localhost")
+            connexion = join_game("localhost")
             if 'screen' in parametre:
                 del parametre['screen'] 
-            envoyer_parametre_client_vers_server(connection, parametre)
-            jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player, nb_barriere,connection)
+            envoyer_parametre_client_vers_server(connexion, parametre)
+            jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player, nb_barriere,connexion=connexion,id_client=parametre['id_client'])
         break
 
 

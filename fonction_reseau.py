@@ -10,10 +10,11 @@ def envoyer_parametre_client_vers_server(joueurs, parametre):
     joueurs.sendall(data_size + parametre_bytes)
     print('-----------------------------------parametre envoyé au server-----------------------------------')
 
-def envoyer_parametre_server_vers_client(connection, parametre):
+def envoyer_parametre_server_vers_client(connexion, parametre,id_client):
+        parametre['id_client'] = id_client
         parametre_bytes = pickle.dumps(parametre)
         data_size = len(parametre_bytes).to_bytes(4, byteorder='big')
-        connection.sendall(data_size + parametre_bytes)
+        connexion.sendall(data_size + parametre_bytes)
         print('-----------------------------------parametre envoyé au client-----------------------------------')
 
 def recevoir_parametre_server(connexion):
@@ -62,9 +63,9 @@ class ThreadforServer(threading.Thread):
                 data = self.conn.recv(4096)
                 if not data:
                     break
-                print(data)
                 self.lock.acquire()
                 self.data = pickle.loads(data)
+                print(self.data)
                 self.lock.release()
                 print('-----------------------------------tableau reçu du client-----------------------------------')
                 self.envoyer_tableau_jeu_server()

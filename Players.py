@@ -1,13 +1,15 @@
 
 class Player:
 
-    def __init__(self, x, y,wall, ID,score,color):
+    def __init__(self, x, y,wall, ID,score,color,arrive_x,arrive_y):
         self.x = x
         self.y = y
         self.num_walls = wall
         self.ID = ID
         self.score = score
         self.color = color
+        self.arrive_x = arrive_x
+        self.arrive_y = arrive_y
     def move(self, x, y,walls,NUM_CELLS,board):
         direction = ""
         if (abs(x - self.x) <= 1 and y == self.y) or (abs(y - self.y) <= 1 and x == self.x):
@@ -59,13 +61,18 @@ class Player:
         players = []
         centers = [(NUM_CELLS // 2, 0), (NUM_CELLS // 2, NUM_CELLS - 1), (0, NUM_CELLS // 2),
                    (NUM_CELLS - 1, NUM_CELLS // 2)]
+        arrive_coords = [(NUM_CELLS // 2, NUM_CELLS - 1), (NUM_CELLS // 2, 0), (NUM_CELLS - 1, NUM_CELLS // 2),
+                         (0, NUM_CELLS // 2)]
         colors = ["rouge", "bleu", "vert", "jaune"]  # List of colors
         if num_players == 2:
-            players.append(Player(centers[0][0], centers[0][1], wall // 4, 1, 0, colors[0]))
-            players.append(Player(centers[1][0], centers[1][1], wall // 4, 2, 0, colors[1]))
+            for i in range(2):
+                players.append(Player(centers[i][0], centers[i][1], wall // 4, i + 1, 0, colors[i],
+                                      arrive_coords[i][0], arrive_coords[i][1]))
+
         elif num_players == 4:
             for i in range(4):
-                players.append(Player(centers[i][0], centers[i][1], wall // 4, i + 1, 0, colors[i]))
+                players.append(Player(centers[i][0], centers[i][1], wall // 4, i + 1, 0, colors[i],
+                                      arrive_coords[i][0], arrive_coords[i][1]))
         else:
             raise ValueError("Invalid number of players. Only 2 or 4 are accepted.")
         return players

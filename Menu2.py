@@ -52,7 +52,7 @@ menu.add.button('Play IA', start_the_game_IA)
 menu.add.button('Play Réseau', start_the_game_network)
 menu.add.button('Quit', pygame_menu.events.EXIT)
 
-# Boucle principale du menu
+# Boucle principale du menu+
 if __name__ == "__main__":
     while True:
         events = pygame.event.get()

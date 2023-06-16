@@ -61,6 +61,8 @@ def draw_walls(walls,screen,BOARD_LEFT,CELL_SIZE,BOARD_TOP):
 
 
 
+
+
 game_turn=1
 def player_turn(player, game_turn):
     game_turn=game_turn%(player+1)
@@ -126,7 +128,7 @@ def condition_victoire(tableau, players):
     return 0
 
 
-def reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP,player_in_game):
+def reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP,player_in_game,connection):
     global game_turn, wall_button_clicked, wall_orientation, walls, board, nb_barriere
     # Réinitialiser les variables globales
     game_turn = 1
@@ -142,7 +144,7 @@ def reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_L
     player_in_game = Player.create_players(Player, nb_player, nb_barriere, NUM_CELLS)
     for i in range(len(player_in_game)):
         player_in_game[i].score=point[i]
-    jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player,nb_barriere, barriere_max)
+    jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_game, player_color, board, nb_player,nb_barriere, barriere_max,connection)
 
 def draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color):
     # Zone en haut à gauche pour le nombre de barrières
@@ -179,104 +181,109 @@ def jeux(walls, screen, CELL_SIZE, BOARD_LEFT, BOARD_TOP, NUM_CELLS, player_in_g
             if new_tableau:
                 board = new_tableau["board"]
                 walls = new_tableau["walls"]
-
-        screen.fill((0, 0, 0))
-        draw_board(NUM_CELLS, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
-        draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, player_color, screen, board)
-        draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color)
-        
-        for button in buttons:
-            button.draw(screen)
-        for event in pygame.event.get():
+                player_in_game = new_tableau["player_in_game"]
+                is_your_turn = True
 
 
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        else:
+            screen.fill((0, 0, 0))
+            draw_board(NUM_CELLS, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
+            draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, player_color, screen, board)
+            draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color)
+            
+            for button in buttons:
+                button.draw(screen)
+            for event in pygame.event.get():
 
 
-            elif event.type == pygame.MOUSEBUTTONUP:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                for button in buttons:
-                    if button.rect.collidepoint(mouse_x, mouse_y):
-                        if button.text == "HAUT":
-                            wall_orientation = "HORIZONTAL"
-                            wall_position = "TOP"
-                            wall_button_clicked = True
-                        elif button.text == "BAS":
-                            wall_orientation = "HORIZONTAL"
-                            wall_position = "BOTTOM"
-                            wall_button_clicked = True
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
 
-                        elif button.text == "DROITE":
-                            wall_orientation = "VERTICAL"
-                            wall_position = "RIGHT"
-                            wall_button_clicked = True
-                        elif button.text == "GAUCHE":
-                            wall_orientation = "VERTICAL"
-                            wall_position = "LEFT"
-                            wall_button_clicked = True
 
-                    if button.rect.collidepoint(mouse_x, mouse_y):
-                        if button.text == "Restart" or button.text == "Nouvelle Partie":
-                            reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP,player_in_game)
-            if game_over:  # Si le jeu est terminé, ignorer tous les événements
-                continue
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for button in buttons:
+                        if button.rect.collidepoint(mouse_x, mouse_y):
+                            if button.text == "HAUT":
+                                wall_orientation = "HORIZONTAL"
+                                wall_position = "TOP"
+                                wall_button_clicked = True
+                            elif button.text == "BAS":
+                                wall_orientation = "HORIZONTAL"
+                                wall_position = "BOTTOM"
+                                wall_button_clicked = True
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                grid_x, grid_y = mouse_to_grid(mouse_x, mouse_y, CELL_SIZE, BOARD_LEFT, BOARD_TOP)
+                            elif button.text == "DROITE":
+                                wall_orientation = "VERTICAL"
+                                wall_position = "RIGHT"
+                                wall_button_clicked = True
+                            elif button.text == "GAUCHE":
+                                wall_orientation = "VERTICAL"
+                                wall_position = "LEFT"
+                                wall_button_clicked = True
 
-                if event.button == 1:  # Clic gauche pour déplacer le joueur
-                    for i in range(len(player_in_game)):
-                        if game_turn == player_in_game[i].ID:
-                            if (abs(grid_x - player_in_game[i].x) <= 1 and grid_y == player_in_game[i].y) or (
-                                    abs(grid_y - player_in_game[i].y) <= 1 and grid_x == player_in_game[i].x):
-                                if player_in_game[i].move(grid_x, grid_y, walls, NUM_CELLS, board):
-                                    if connection != 0:
-                                        envoyer_tableau_jeu(connection, board, walls)
-                                    game_turn = player_turn(nb_player, game_turn)
-                                    winner = condition_victoire(board, player_in_game)
-                                    if winner != 0:
-                                        game_over = True  # Mettre fin au jeu
-                                        print("Le jeu est terminé. Le joueur", winner, "a gagné!")
-                                        break
-                                    is_your_turn = False
-                                break
+                        if button.rect.collidepoint(mouse_x, mouse_y):
+                            if button.text == "Restart" or button.text == "Nouvelle Partie":
+                                reset_game(NUM_CELLS, barriere_max, nb_player, player_color, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP,player_in_game,connection)
+                if game_over:  # Si le jeu est terminé, ignorer tous les événements
+                    continue
 
-                elif event.button == 3:  # Clic droit pour placer un mur
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_x, mouse_y = pygame.mouse.get_pos()
+                    grid_x, grid_y = mouse_to_grid(mouse_x, mouse_y, CELL_SIZE, BOARD_LEFT, BOARD_TOP)
 
-                    if wall_button_clicked:
+                    if event.button == 1:  # Clic gauche pour déplacer le joueur
                         for i in range(len(player_in_game)):
-
                             if game_turn == player_in_game[i].ID:
-
-                                if player_in_game[i].num_walls > 0:
-
-                                    if wall_orientation == "HORIZONTAL":
-                                        walls[grid_x][grid_y][wall_position] = 1
-                                        if wall_position == "TOP":
-                                            walls[grid_x][grid_y - 1]["BOTTOM"] = 1
-                                        else:
-                                            walls[grid_x][grid_y + 1]["TOP"] = 1
-                                    else:
-                                        walls[grid_x][grid_y][wall_position] = 1
-                                        if wall_position == "LEFT":
-                                            walls[grid_x - 1][grid_y]["RIGHT"] = 1
-                                        else:
-                                            walls[grid_x + 1][grid_y]["LEFT"] = 1
-                                    player_in_game[i].num_walls -= 1
-                                    game_turn = player_turn(nb_player, game_turn)
-                                    if connection != 0:
-                                        envoyer_tableau_jeu(connection, board, walls)
+                                if (abs(grid_x - player_in_game[i].x) <= 1 and grid_y == player_in_game[i].y) or (
+                                        abs(grid_y - player_in_game[i].y) <= 1 and grid_x == player_in_game[i].x):
+                                    if player_in_game[i].move(grid_x, grid_y, walls, NUM_CELLS, board):
+                                        if connection != 0:
+                                            envoyer_tableau_jeu(connection, board, walls,player_in_game)
+                                        game_turn = player_turn(nb_player, game_turn)
+                                        winner = condition_victoire(board, player_in_game)
+                                        if winner != 0:
+                                            game_over = True  # Mettre fin au jeu
+                                            print("Le jeu est terminé. Le joueur", winner, "a gagné!")
+                                            break
+                                        is_your_turn = False
                                     break
 
-                        wall_button_clicked = False
+                    elif event.button == 3:  # Clic droit pour placer un mur
+                        if wall_button_clicked:
+                            for i in range(len(player_in_game)):
+                                if game_turn == player_in_game[i].ID:
+                                    if player_in_game[i].num_walls > 0:
+                                        if wall_orientation == "HORIZONTAL":
+                                            walls[grid_x][grid_y][wall_position] = 1
+                                            if wall_position == "TOP":
+                                                walls[grid_x][grid_y - 1]["BOTTOM"] = 1
+                                                walls[grid_x + 1][grid_y - 1]["BOTTOM"] = 1
+                                            else:
+                                                walls[grid_x][grid_y + 1]["TOP"] = 1
+                                                walls[grid_x + 1][grid_y + 1]["TOP"] = 1
+                                        else:
+                                            walls[grid_x][grid_y][wall_position] = 1
+                                            if wall_position == "LEFT":
+                                                walls[grid_x - 1][grid_y]["RIGHT"] = 1
+                                                walls[grid_x - 1][grid_y + 1]["RIGHT"] = 1
+                                            else:
+                                                walls[grid_x + 1][grid_y]["LEFT"] = 1
+                                                walls[grid_x + 1][grid_y + 1]["LEFT"] = 1
+                                        player_in_game[i].num_walls -= 1
+                                        game_turn = player_turn(nb_player, game_turn)
+                                        if connection != 0:
+                                            envoyer_tableau_jeu(connection, board, walls, player_in_game)
+                                        break
+                            wall_button_clicked = False
 
 
-        # Dessin du plateau de jeu, des joueurs et des murs
-
+            # Dessin du plateau de jeu, des joueurs et des murs
+        draw_board(NUM_CELLS, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
         draw_walls(walls, screen, BOARD_LEFT, CELL_SIZE, BOARD_TOP)
+        draw_player(nb_player, BOARD_LEFT, BOARD_TOP, CELL_SIZE, player_in_game, player_color, screen, board)
+        draw_score_and_barriers(screen, player_in_game, game_turn, font, player_color)
         # Mettre à jour l'affichage
         pygame.display.flip()
         pygame.time.wait(50)  # Ajoutez cette ligne pour contrôler la vitesse de rafraîchissement de l'écran

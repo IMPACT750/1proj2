@@ -91,8 +91,8 @@ class ThreadforServer(threading.Thread):
             self.envoyer_tableau_jeu_server()
 
 
-def envoyer_tableau_jeu(conn, board, walls):
-    data = {"board": board, "walls": walls}
+def envoyer_tableau_jeu(conn, board, walls, player_in_game):
+    data = {"board": board, "walls": walls,"player_in_game": player_in_game}
     try:
         data_bytes = pickle.dumps(data)
         conn.sendall(data_bytes)

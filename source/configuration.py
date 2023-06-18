@@ -12,7 +12,7 @@ class Configuration:
     PLAYER_TYPES: typing.Tuple['str', 'str', 'str']                 = ("Local Player", "Remote Player", "AI")
     PLAYER_COLORS: typing.Tuple['str', 'str', 'str', 'str']         = ("red", "blue", "green", "yellow")
     PLAYER_LIGHT_COLORS: typing.Tuple['str', 'str', 'str', 'str']   = ("lightcoral", "steelblue3", "lightgreen", "lightgoldenrod1")
-    SERVER_IP: 'str'                                                = "localhost"
+    SERVER_IP: 'str'                                                = ""
     SERVER_PORT: 'int'                                              = 12800
     TITLE: 'str'                                                    = "Quoridor Game"
     WINDOW_SIZE: typing.Tuple['int', 'int']                         = (1000, 800)

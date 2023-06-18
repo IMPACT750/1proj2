@@ -55,7 +55,6 @@ class Engine:
             if self.current_view is not None:
                 self.current_view.run(self, events)
             pygame.display.update()
-            pygame.event.clear()
             self.surface.fill(Configuration.BACKGROUND_COLOR)
             pygame.time.wait(1000 // Configuration.FRAME_PER_SECOND)
 

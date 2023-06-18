@@ -24,6 +24,7 @@ class Engine:
 
         self.client: 'Client' = None
         self.server: 'Server' = None
+        self.fichier_musique = "source\musique.mp3"
 
     def initialize_game(self):
         self.game_running = True
@@ -57,6 +58,7 @@ class Engine:
             pygame.display.update()
             self.surface.fill(Configuration.BACKGROUND_COLOR)
             pygame.time.wait(1000 // Configuration.FRAME_PER_SECOND)
+            self.start_music()
 
     def start_network(self, ip_address: 'str' = None):
         if ip_address is not None:
@@ -98,3 +100,11 @@ class Engine:
             return self.client.wait_data()
         if self.server is not None:
             return self.server.wait_data()
+
+    def start_music(self):
+        if not pygame.mixer.get_init():  # Initialise le mixer si ce n'est pas déjà fait
+            pygame.mixer.init()
+        if not pygame.mixer.music.get_busy():  # Si la musique n'est pas déjà en train de jouer
+            pygame.mixer.music.load(self.fichier_musique)
+            pygame.mixer.music.set_volume(0.15)
+            pygame.mixer.music.play()

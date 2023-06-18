@@ -6,6 +6,8 @@ from .abstract_player import AbstractPlayer
 
 class LocalPlayer(AbstractPlayer):
 
+
+
     def _mouse_to_barrier_position(self, x: 'int', y: 'int', board_offset: typing.Tuple['int', 'int']) -> typing.Tuple['int', 'int', 'str']:
         board_x_offset, board_y_offset = board_offset
 
@@ -52,6 +54,7 @@ class LocalPlayer(AbstractPlayer):
                     self._unpreview_install(engine.board)
                     self._unpreview_move(engine.board)
                     engine.update_to_network()
+                    self.jouer_son_pion("source/pawn.wav")
                     return True
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_RIGHT:
                 x, y, direction = self._mouse_to_barrier_position(*pygame.mouse.get_pos(), (board_x_offset, board_y_offset))
@@ -61,6 +64,7 @@ class LocalPlayer(AbstractPlayer):
                     self._unpreview_install(engine.board)
                     self._unpreview_move(engine.board)
                     engine.update_to_network()
+                    self.jouer_son_barriere("source/barriere.wav")
                     return True
             else:
                 barrier_position = self._mouse_to_barrier_position(*pygame.mouse.get_pos(), (board_x_offset, board_y_offset))
@@ -68,6 +72,7 @@ class LocalPlayer(AbstractPlayer):
 
                 if engine.board.is_possible_installation(*barrier_position, engine.number_of_barriers - self.number_of_barriers_placed, []) is True:
                     self._preview_install(*barrier_position, engine.board)
+
                 else:
                     self._unpreview_install(engine.board)
                 if engine.board.is_possible_move(self.x, self.y, *cell_position) is True:
@@ -79,6 +84,14 @@ class LocalPlayer(AbstractPlayer):
 
     def is_ready(self) -> 'bool':
         return True
+
+    def jouer_son_pion(self, fichier_son):
+        son = pygame.mixer.Sound(fichier_son)
+        son.play()
+    def jouer_son_barriere(self, fichier_son):
+        son = pygame.mixer.Sound(fichier_son)
+        son.play()
+
 
 
 AbstractPlayer.PLAYERS[Configuration.PLAYER_TYPES[0]] = LocalPlayer
